@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -17,24 +16,25 @@ type Lb struct {
 }
 
 type backend struct {
-	addr  string
-	proxy *httputil.ReverseProxy
+	Addr  string
+	Proxy *httputil.ReverseProxy
 }
 
-func NewBackend(myurl string) backend {
+func newBackend(myurl string) backend {
 	rpURL, err := url.Parse(myurl)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(rpURL)
 	return backend{
-		addr:  myurl,
-		proxy: httputil.NewSingleHostReverseProxy(rpURL),
+		Addr:  myurl,
+		Proxy: httputil.NewSingleHostReverseProxy(rpURL),
 	}
 }
 
 func (lb *Lb) random_selection(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
-	lb.backends[rand.Intn(len(lb.backends))].proxy.ServeHTTP(w, r)
+	lb.backends[rand.Intn(len(lb.backends))].Proxy.ServeHTTP(w, r)
 }
 
 /*
@@ -55,30 +55,19 @@ func main() {
 	defer backendServer2.Close()
 
 	backends := []backend{
-		NewBackend(backendServer.URL),
-		NewBackend(backendServer2.URL),
+		newBackend(backendServer.URL),
+		newBackend(backendServer2.URL),
 	}
 
 	lb := Lb{
 		backends: backends,
 	}
-
-	proxyHandler := func(r http.ResponseWriter, w *http.Request) {
-		lb.random_selection(r, w)
+	lb_proxy := http.Server{
+		Addr:    fmt.Sprintf(":%d", 8080),
+		Handler: http.HandlerFunc(lb.random_selection),
 	}
-	frontendProxy := httptest.NewServer(http.HandlerFunc(proxyHandler))
-	defer frontendProxy.Close()
-
-	// GET test
-	resp, err := http.Get(frontendProxy.URL)
-	if err != nil {
+	if err := lb_proxy.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("%s", b)
 }
