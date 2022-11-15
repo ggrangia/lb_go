@@ -1,31 +1,27 @@
-package main
+package lb_go
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"math/rand"
-	"net/http"
-	"net/http/httptest"
 	"net/http/httputil"
 	"net/url"
-	"time"
 )
 
 type Lb struct {
-	backends []backend
-	selector Selector
+	Backends []backend
+	Selector Selector
 }
 
 type Selector interface {
 	Select([]backend) backend
 }
 type RandomSelection struct {
-	seed int64
+	Seed int64
 }
 
 func (rs *RandomSelection) Select(backends []backend) backend {
-	rand.Seed(rs.seed)
+	rand.Seed(rs.Seed)
 	return backends[rand.Intn(len(backends))]
 }
 
@@ -34,7 +30,7 @@ type backend struct {
 	Proxy *httputil.ReverseProxy
 }
 
-func newBackend(myurl string) backend {
+func NewBackend(myurl string) backend {
 	rpURL, err := url.Parse(myurl)
 	if err != nil {
 		log.Fatal(err)
@@ -44,61 +40,4 @@ func newBackend(myurl string) backend {
 		Addr:  myurl,
 		Proxy: httputil.NewSingleHostReverseProxy(rpURL),
 	}
-}
-
-/*
-	func (lb *Lb) lb_algo(w http.ResponseWriter, r *http.Request) {
-		lb.random_selection().proxy.ServeHTTP(w, r)
-	}
-*/
-func main() {
-
-	backendServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "this call was relayed by the reverse proxy")
-	}))
-	defer backendServer.Close()
-
-	backendServer2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "this call was relayed by the reverse proxy2")
-	}))
-	defer backendServer2.Close()
-
-	backends := []backend{
-		newBackend(backendServer.URL),
-		newBackend(backendServer2.URL),
-	}
-
-	rs := RandomSelection{
-		seed: time.Now().UTC().UnixNano(),
-	}
-
-	lb := Lb{
-		backends: backends,
-		selector: &rs,
-	}
-	/*
-		lb_proxy := http.Server{
-			Addr:    fmt.Sprintf(":%d", 8080),
-			Handler: http.HandlerFunc(lb.random_selection),
-		}
-		if err := lb_proxy.ListenAndServe(); err != nil {
-			log.Fatal(err)
-		}
-	*/
-	frontendProxy := httptest.NewServer(http.HandlerFunc(lb.selector.Select(lb.backends).Proxy.ServeHTTP))
-	defer frontendProxy.Close()
-
-	// GET test
-	resp, err := http.Get(frontendProxy.URL)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("%s", b)
-
 }
