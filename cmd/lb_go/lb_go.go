@@ -13,6 +13,19 @@ import (
 
 type Lb struct {
 	backends []backend
+	selector Selector
+}
+
+type Selector interface {
+	Select ([]backend) backend
+} 
+type RandomSelection struct {
+	seed int64
+}
+
+func (rs *RandomSelection) Selector(backends []backend) {
+	rand.Seed(rs.seed)
+	return backends[rand.Intn(len(lb.backends))]
 }
 
 type backend struct {
@@ -30,11 +43,6 @@ func newBackend(myurl string) backend {
 		Addr:  myurl,
 		Proxy: httputil.NewSingleHostReverseProxy(rpURL),
 	}
-}
-
-func (lb *Lb) random_selection(w http.ResponseWriter, r *http.Request) {
-	rand.Seed(time.Now().UnixNano())
-	lb.backends[rand.Intn(len(lb.backends))].Proxy.ServeHTTP(w, r)
 }
 
 /*
@@ -62,6 +70,7 @@ func main() {
 	lb := Lb{
 		backends: backends,
 	}
+	/*
 	lb_proxy := http.Server{
 		Addr:    fmt.Sprintf(":%d", 8080),
 		Handler: http.HandlerFunc(lb.random_selection),
@@ -69,5 +78,21 @@ func main() {
 	if err := lb_proxy.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
+	*/
+	frontendProxy := httptest.NewServer(http.HandlerFunc(proxyHandler))
+	defer frontendProxy.Close()
+
+	// GET test
+	resp, err := http.Get(frontendProxy.URL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%s", b)
 
 }
