@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -17,15 +18,15 @@ type Lb struct {
 }
 
 type Selector interface {
-	Select ([]backend) backend
-} 
+	Select([]backend) backend
+}
 type RandomSelection struct {
 	seed int64
 }
 
-func (rs *RandomSelection) Selector(backends []backend) {
+func (rs *RandomSelection) Select(backends []backend) backend {
 	rand.Seed(rs.seed)
-	return backends[rand.Intn(len(lb.backends))]
+	return backends[rand.Intn(len(backends))]
 }
 
 type backend struct {
@@ -67,19 +68,24 @@ func main() {
 		newBackend(backendServer2.URL),
 	}
 
+	rs := RandomSelection{
+		seed: time.Now().UTC().UnixNano(),
+	}
+
 	lb := Lb{
 		backends: backends,
+		selector: &rs,
 	}
 	/*
-	lb_proxy := http.Server{
-		Addr:    fmt.Sprintf(":%d", 8080),
-		Handler: http.HandlerFunc(lb.random_selection),
-	}
-	if err := lb_proxy.ListenAndServe(); err != nil {
-		log.Fatal(err)
-	}
+		lb_proxy := http.Server{
+			Addr:    fmt.Sprintf(":%d", 8080),
+			Handler: http.HandlerFunc(lb.random_selection),
+		}
+		if err := lb_proxy.ListenAndServe(); err != nil {
+			log.Fatal(err)
+		}
 	*/
-	frontendProxy := httptest.NewServer(http.HandlerFunc(proxyHandler))
+	frontendProxy := httptest.NewServer(http.HandlerFunc(lb.selector.Select(lb.backends).Proxy.ServeHTTP))
 	defer frontendProxy.Close()
 
 	// GET test
