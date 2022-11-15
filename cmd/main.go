@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"time"
+
+	lb "github.com/ggrangia/lb_go/cmd/lb_go"
 )
 
 func main() {
@@ -20,19 +22,17 @@ func main() {
 		fmt.Fprintln(w, "this call was relayed by the reverse proxy2")
 	}))
 	defer backendServer2.Close()
-
-	backends := []backend{
-		newBackend(backendServer.URL),
-		newBackend(backendServer2.URL),
+	backends := []lb.Backend{
+		lb.NewBackend(backendServer.URL),
+		lb.NewBackend(backendServer2.URL),
+	}
+	rs := lb.RandomSelection{
+		Seed: time.Now().UTC().UnixNano(),
 	}
 
-	rs := RandomSelection{
-		seed: time.Now().UTC().UnixNano(),
-	}
-
-	lb := Lb{
-		backends: backends,
-		selector: &rs,
+	lb := lb.Lb{
+		Backends: backends,
+		Selector: &rs,
 	}
 	/*
 		lb_proxy := http.Server{
@@ -43,7 +43,7 @@ func main() {
 			log.Fatal(err)
 		}
 	*/
-	frontendProxy := httptest.NewServer(http.HandlerFunc(lb.selector.Select(lb.backends).Proxy.ServeHTTP))
+	frontendProxy := httptest.NewServer(http.HandlerFunc(lb.Selector.Select(lb.Backends).Proxy.ServeHTTP))
 	defer frontendProxy.Close()
 
 	// GET test
