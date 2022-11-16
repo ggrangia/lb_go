@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"time"
 
 	lb "github.com/ggrangia/lb_go/cmd/lb_go"
 )
@@ -25,9 +24,8 @@ func main() {
 		lb.NewBackend(backendServer.URL),
 		lb.NewBackend(backendServer2.URL),
 	}
-	rs := lb.RandomSelection{
-		Seed: time.Now().UTC().UnixNano(),
-	}
+
+	// FIXME: fetch Selector
 
 	lb := lb.Lb{
 		Backends: backends,
