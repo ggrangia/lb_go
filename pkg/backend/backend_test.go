@@ -23,6 +23,6 @@ func TestNewBackend(t *testing.T) {
 	result := backend.NewBackend(wantUrl)
 
 	if diff := cmp.Diff(expected, result); diff != "" {
-		t.Errorf(diff)
+		t.Errorf("Got backend %v want %v, diff: %v", result, expected, diff)
 	}
 }
