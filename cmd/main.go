@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -34,29 +33,13 @@ func main() {
 		Backends: backends,
 		Selector: &rs,
 	}
-	/*
-		lb_proxy := http.Server{
-			Addr:    fmt.Sprintf(":%d", 8080),
-			Handler: http.HandlerFunc(lb.random_selection),
-		}
-		if err := lb_proxy.ListenAndServe(); err != nil {
-			log.Fatal(err)
-		}
-	*/
-	frontendProxy := httptest.NewServer(http.HandlerFunc(lb.Selector.Select(lb.Backends).Proxy.ServeHTTP))
-	defer frontendProxy.Close()
 
-	// GET test
-	resp, err := http.Get(frontendProxy.URL)
-	if err != nil {
+	lb_proxy := http.Server{
+		Addr:    fmt.Sprintf(":%d", 8080),
+		Handler: http.HandlerFunc(lb.Selector.Select(lb.Backends).Proxy.ServeHTTP),
+	}
+	if err := lb_proxy.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
-
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("%s", b)
 
 }
