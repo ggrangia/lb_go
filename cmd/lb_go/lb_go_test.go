@@ -9,11 +9,12 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 )
 
-func setupBackends(t *testing.T) (func(t *testing.T), []backend) {
+func setupBackends(t *testing.T) (func(t *testing.T), []Backend) {
 	backendServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "this call was relayed by the reverse proxy")
 	}))
@@ -21,9 +22,9 @@ func setupBackends(t *testing.T) (func(t *testing.T), []backend) {
 		fmt.Fprintln(w, "this call was relayed by the reverse proxy2")
 	}))
 
-	backends := []backend{
-		newBackend(backendServer.URL),
-		newBackend(backendServer2.URL),
+	backends := []Backend{
+		NewBackend(backendServer.URL),
+		NewBackend(backendServer2.URL),
 	}
 	teardown := func(t *testing.T) {
 		defer backendServer.Close()
@@ -39,11 +40,11 @@ func TestNewBackend(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	expected := backend{
+	expected := Backend{
 		Addr:  wantUrl,
 		Proxy: httputil.NewSingleHostReverseProxy(rpURL),
 	}
-	result := newBackend(wantUrl)
+	result := NewBackend(wantUrl)
 
 	if diff := cmp.Diff(expected, result); diff != "" {
 		t.Error(diff)
@@ -53,12 +54,16 @@ func TestNewBackend(t *testing.T) {
 func TestRandomSelectionFull(t *testing.T) {
 	teardown, backends := setupBackends(t)
 	defer teardown(t)
-	lb := Lb{backends}
-
-	proxyHandler := func(r http.ResponseWriter, w *http.Request) {
-		lb.random_selection(r, w)
+	rs := RandomSelection{
+		Seed: time.Now().UTC().UnixNano(),
 	}
-	frontendProxy := httptest.NewServer(http.HandlerFunc(proxyHandler))
+
+	lb := Lb{
+		Backends: backends,
+		Selector: &rs,
+	}
+
+	frontendProxy := httptest.NewServer(http.HandlerFunc(lb.Selector.Select(lb.Backends).Proxy.ServeHTTP))
 	defer frontendProxy.Close()
 
 	// GET test
