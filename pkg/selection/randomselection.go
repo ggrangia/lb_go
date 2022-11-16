@@ -1,4 +1,4 @@
-package randomselection
+package selection
 
 import (
 	"math/rand"
