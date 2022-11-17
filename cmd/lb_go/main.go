@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"time"
 
 	"github.com/ggrangia/lb_go/pkg/backend"
 	lb "github.com/ggrangia/lb_go/pkg/lb_go"
@@ -33,11 +34,11 @@ func main() {
 	}
 
 	// FIXME: fetch Selector
-	rs := selection.RoundRobin{}
-
+	//rs := selection.RoundRobin{}
+	rs := selection.NewRandomSelection(time.Now().UTC().UnixNano())
 	lb := lb.Lb{
 		Backends: backends,
-		Selector: &rs,
+		Selector: rs,
 	}
 
 	lb_proxy := http.Server{

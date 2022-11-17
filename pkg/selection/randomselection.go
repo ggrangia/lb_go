@@ -5,10 +5,17 @@ import (
 )
 
 type RandomSelection struct {
-	Seed int64
+	generator rand.Rand
 }
 
 func (rs *RandomSelection) Select(l int) int {
-	rand.Seed(rs.Seed)
-	return rand.Intn(l)
+	return rs.generator.Intn(l)
+}
+
+func NewRandomSelection(seed int64) Selector {
+	source := rand.NewSource(seed)
+	generator := rand.New(source)
+	return &RandomSelection{
+		generator: *generator,
+	}
 }

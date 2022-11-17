@@ -14,3 +14,7 @@ func (rr *RoundRobin) Select(l int) int {
 	rr.Counter += 1
 	return b
 }
+
+func NewRoundRobin() Selector {
+	return &RoundRobin{}
+}

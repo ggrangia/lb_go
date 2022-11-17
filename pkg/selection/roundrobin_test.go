@@ -19,7 +19,7 @@ func TestRoundRobin(t *testing.T) {
 		{input: 3, want: 0, counter: 3},
 		{input: 3, want: 1, counter: 4},
 	}
-	rr := selection.RoundRobin{}
+	rr := selection.NewRoundRobin()
 
 	for c, tc := range tests {
 		got := rr.Select(tc.input)
