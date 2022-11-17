@@ -15,9 +15,9 @@ type Lb struct {
 
 func (lb *Lb) Serve(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("called the proxy")
-	b := lb.Selector.Select(lb.Backends)
+	b := lb.Selector.Select(len(lb.Backends))
 
-	b.Proxy.ServeHTTP(w, r)
+	lb.Backends[b].Proxy.ServeHTTP(w, r)
 }
 
 func (lb *Lb) Start() {

@@ -1,7 +1,16 @@
 package selection_test
 
-import "testing"
+import (
+	"testing"
+)
 
-func Test(t *testing.T) {
+type RoundRobinMock struct{}
 
+func TestRoundRobin(t *testing.T) {
+	type test struct {
+		input int
+	}
+	//rr := selection.RoundRobin{}
+
+	//rr.Select()
 }
