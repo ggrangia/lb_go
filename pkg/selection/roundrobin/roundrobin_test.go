@@ -13,11 +13,11 @@ func TestRoundRobin(t *testing.T) {
 		want    int
 		counter int
 	}{
-		{input: 3, want: 0, counter: 0},
-		{input: 3, want: 1, counter: 1},
-		{input: 3, want: 2, counter: 2},
-		{input: 3, want: 0, counter: 3},
-		{input: 3, want: 1, counter: 4},
+		{input: 3, want: 1, counter: 0},
+		{input: 3, want: 2, counter: 1},
+		{input: 3, want: 0, counter: 2},
+		{input: 3, want: 1, counter: 3},
+		{input: 3, want: 2, counter: 4},
 	}
 	rr := roundrobin.NewRoundRobin()
 

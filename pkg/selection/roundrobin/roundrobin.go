@@ -1,18 +1,16 @@
 package roundrobin
 
 import (
-	"fmt"
+	"sync/atomic"
 )
 
 type RoundRobin struct {
-	Counter int
+	Counter uint64
 }
 
 func (rr *RoundRobin) Select(l int) int {
-	b := rr.Counter % l
-	fmt.Printf("Current counter %d\n", rr.Counter)
-	rr.Counter += 1
-	return b
+	// First return is 1
+	return int(atomic.AddUint64(&rr.Counter, uint64(1)) % uint64(l))
 }
 
 func NewRoundRobin() *RoundRobin {
