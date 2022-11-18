@@ -15,11 +15,11 @@ func TestE2eRoundRobin(t *testing.T) {
 	teardown, backends := setupBackends(t, 3)
 	defer teardown(t)
 
-	selector := roundrobin.RoundRobin{}
+	selector := roundrobin.NewRoundRobin()
 
 	lb := lb_go.Lb{
 		Backends: backends,
-		Selector: &selector,
+		Selector: selector,
 	}
 	frontendProxy := httptest.NewServer(http.HandlerFunc(lb.Serve))
 	defer frontendProxy.Close()
@@ -33,5 +33,5 @@ func TestE2eRoundRobin(t *testing.T) {
 	}
 	wg.Wait()
 
-	//t.Errorf("FIXME: To be Completed")
+	t.Errorf("FIXME: To be Completed")
 }

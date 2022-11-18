@@ -9,7 +9,7 @@ import (
 
 	"github.com/ggrangia/lb_go/pkg/backend"
 	lb "github.com/ggrangia/lb_go/pkg/lb_go"
-	"github.com/ggrangia/lb_go/pkg/selection"
+	"github.com/ggrangia/lb_go/pkg/selection/randomselection"
 )
 
 func main() {
@@ -35,7 +35,7 @@ func main() {
 
 	// FIXME: fetch Selector
 	//rs := selection.RoundRobin{}
-	rs := selection.NewRandomSelection(time.Now().UTC().UnixNano())
+	rs := randomselection.NewRandomSelection(time.Now().UTC().UnixNano())
 	lb := lb.Lb{
 		Backends: backends,
 		Selector: rs,
