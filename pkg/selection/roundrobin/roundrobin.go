@@ -1,4 +1,4 @@
-package selection
+package roundrobin
 
 import (
 	"fmt"
@@ -15,6 +15,6 @@ func (rr *RoundRobin) Select(l int) int {
 	return b
 }
 
-func NewRoundRobin() Selector {
+func NewRoundRobin() *RoundRobin {
 	return &RoundRobin{}
 }

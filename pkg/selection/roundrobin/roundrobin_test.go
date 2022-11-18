@@ -1,9 +1,9 @@
-package selection_test
+package roundrobin_test
 
 import (
 	"testing"
 
-	"github.com/ggrangia/lb_go/pkg/selection"
+	"github.com/ggrangia/lb_go/pkg/selection/roundrobin"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -19,7 +19,7 @@ func TestRoundRobin(t *testing.T) {
 		{input: 3, want: 0, counter: 3},
 		{input: 3, want: 1, counter: 4},
 	}
-	rr := selection.NewRoundRobin()
+	rr := roundrobin.NewRoundRobin()
 
 	for c, tc := range tests {
 		got := rr.Select(tc.input)

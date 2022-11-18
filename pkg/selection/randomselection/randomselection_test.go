@@ -1,11 +1,11 @@
-package selection_test
+package randomselection_test
 
 import (
 	"math/rand"
 	"testing"
 	"time"
 
-	"github.com/ggrangia/lb_go/pkg/selection"
+	"github.com/ggrangia/lb_go/pkg/selection/randomselection"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -20,7 +20,7 @@ func TestRandomSelection(t *testing.T) {
 	source := rand.NewSource(seed)
 	generator := rand.New(source)
 
-	rs := selection.NewRandomSelection(seed)
+	rs := randomselection.NewRandomSelection(seed)
 
 	for i := 0; i < seq_len; i++ {
 		got[i] = rs.Select(max_value)
