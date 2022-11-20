@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/ggrangia/lb_go/pkg/backend"
+	"github.com/ggrangia/lb_go/pkg/healthcheck"
 	"github.com/ggrangia/lb_go/pkg/selection"
 )
 
@@ -22,4 +23,11 @@ func (lb *Lb) Serve(w http.ResponseWriter, r *http.Request) {
 
 func (lb *Lb) Start() {
 
+}
+
+func (lb *Lb) healthchecks() {
+	for _, b := range lb.Backends {
+		// FIXME: Parse URL. Addr in backend url????
+		alive := healthcheck.IsAliveTCP(b.URL)
+	}
 }
