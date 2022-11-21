@@ -9,6 +9,8 @@ import (
 type Backend struct {
 	Addr  string
 	Proxy *httputil.ReverseProxy
+	Url   *url.URL
+	Alive bool
 }
 
 func NewBackend(myurl string) Backend {
@@ -19,6 +21,8 @@ func NewBackend(myurl string) Backend {
 
 	return Backend{
 		Addr:  myurl,
+		Url:   rpURL,
 		Proxy: httputil.NewSingleHostReverseProxy(rpURL),
+		Alive: false,
 	}
 }
