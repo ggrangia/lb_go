@@ -3,6 +3,7 @@ A simple load balancer for teaching load balancing algorithms
 
 # TODO
 * Healthckecks
-* More Algos
+* More Algos: Wrr, least connection
+* Lb constructor
 * Config parse
 * ....
