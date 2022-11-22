@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"time"
 
 	"github.com/ggrangia/lb_go/pkg/backend"
-	lb "github.com/ggrangia/lb_go/pkg/lb_go"
+	"github.com/ggrangia/lb_go/pkg/lb_go"
 	"github.com/ggrangia/lb_go/pkg/selection/randomselection"
 )
 
@@ -36,17 +35,6 @@ func main() {
 	// FIXME: fetch Selector
 	//rs := selection.RoundRobin{}
 	rs := randomselection.NewRandomSelection(time.Now().UTC().UnixNano())
-	lb := lb.Lb{
-		Backends: backends,
-		Selector: rs,
-	}
-
-	lb_proxy := http.Server{
-		Addr:    fmt.Sprintf(":%d", 8080),
-		Handler: http.HandlerFunc(lb.Serve),
-	}
-
-	if err := lb_proxy.ListenAndServe(); err != nil {
-		log.Fatal(err)
-	}
+	lb := lb_go.NewLb(backends, rs)
+	lb.Start()
 }

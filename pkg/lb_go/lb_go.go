@@ -2,6 +2,7 @@ package lb_go
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -11,8 +12,9 @@ import (
 )
 
 type Lb struct {
-	Backends []backend.Backend
-	Selector selection.Selector
+	Backends     []backend.Backend
+	Selector     selection.Selector
+	health_timer int
 }
 
 func (lb *Lb) Serve(w http.ResponseWriter, r *http.Request) {
@@ -22,14 +24,34 @@ func (lb *Lb) Serve(w http.ResponseWriter, r *http.Request) {
 	lb.Backends[b].Proxy.ServeHTTP(w, r)
 }
 
-// FIXME: init the lb server
-// FIXME: make interval variable
-func (lb *Lb) Start() {
-	go lb.runHealthchecks(10)
+func NewLb(backends []backend.Backend, selector selection.Selector) *Lb {
+
+	return &Lb{
+		Backends:     backends,
+		Selector:     selector,
+		health_timer: 10, // default value
+	}
 }
 
-func (lb *Lb) runHealthchecks(seconds int) {
-	ticker := time.NewTicker(time.Second * time.Duration(seconds))
+func (lb *Lb) SetHealthcheckTimer(timer int) {
+	lb.health_timer = timer
+}
+
+func (lb *Lb) Start() {
+	lb_proxy := http.Server{
+		Addr:    fmt.Sprintf(":%d", 8080),
+		Handler: http.HandlerFunc(lb.Serve),
+	}
+
+	go lb.runHealthchecks()
+
+	if err := lb_proxy.ListenAndServe(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (lb *Lb) runHealthchecks() {
+	ticker := time.NewTicker(time.Second * time.Duration(lb.health_timer))
 	for range ticker.C {
 		lb.healthchecks()
 	}
