@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"github.com/ggrangia/lb_go/pkg/backend"
-	lb "github.com/ggrangia/lb_go/pkg/lb_go"
+	"github.com/ggrangia/lb_go/pkg/lb_go"
+	"github.com/ggrangia/lb_go/pkg/selection"
 	"github.com/ggrangia/lb_go/pkg/selection/randomselection"
+	"github.com/ggrangia/lb_go/pkg/selection/roundrobin"
 )
 
 func main() {
@@ -33,20 +35,16 @@ func main() {
 		backend.NewBackend(backendServer3.URL),
 	}
 
-	// FIXME: fetch Selector
-	//rs := selection.RoundRobin{}
-	rs := randomselection.NewRandomSelection(time.Now().UTC().UnixNano())
-	lb := lb.Lb{
-		Backends: backends,
-		Selector: rs,
+	algo := "roundrobin"
+	var selector selection.Selector
+	switch algo {
+	case "roundrobin":
+		selector = roundrobin.NewRoundRobin()
+	case "randomselection":
+		selector = randomselection.NewRandomSelection(time.Now().UTC().UnixNano())
+	default:
+		log.Fatal("Selection algorithm unknown")
 	}
-
-	lb_proxy := http.Server{
-		Addr:    fmt.Sprintf(":%d", 8080),
-		Handler: http.HandlerFunc(lb.Serve),
-	}
-
-	if err := lb_proxy.ListenAndServe(); err != nil {
-		log.Fatal(err)
-	}
+	lb := lb_go.NewLb(backends, selector)
+	lb.Start()
 }
