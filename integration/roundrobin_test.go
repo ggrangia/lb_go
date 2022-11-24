@@ -1,4 +1,4 @@
-package test
+package integration_test
 
 import (
 	"net/http"
@@ -7,15 +7,16 @@ import (
 	"testing"
 
 	"github.com/ggrangia/lb_go/pkg/lb_go"
-	"github.com/ggrangia/lb_go/pkg/selection/roundrobin"
+	"github.com/ggrangia/lb_go/pkg/lb_go/selection/roundrobin"
+	"github.com/ggrangia/lb_go/test"
 )
 
 func TestE2eRoundRobin(t *testing.T) {
 	var wg sync.WaitGroup
-	teardown, backends := setupBackends(t, 3)
+	teardown, backends := test.SetupBackends(t, 3)
 	defer teardown(t)
 
-	selector := roundrobin.NewRoundRobin()
+	selector := roundrobin.New()
 
 	lb := lb_go.Lb{
 		Backends: backends,
@@ -27,7 +28,7 @@ func TestE2eRoundRobin(t *testing.T) {
 	wg.Add(20)
 	for i := 0; i < 20; i++ {
 		go func() {
-			getTest(frontendProxy.URL)
+			test.GetTest(frontendProxy.URL)
 			wg.Done()
 		}()
 	}

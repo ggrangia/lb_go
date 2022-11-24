@@ -8,7 +8,7 @@ import (
 
 	"github.com/ggrangia/lb_go/pkg/backend"
 	"github.com/ggrangia/lb_go/pkg/healthcheck"
-	"github.com/ggrangia/lb_go/pkg/selection"
+	"github.com/ggrangia/lb_go/pkg/lb_go/selection"
 )
 
 type Lb struct {
@@ -19,9 +19,9 @@ type Lb struct {
 
 func (lb *Lb) Serve(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("called the proxy")
-	b := lb.Selector.Select(len(lb.Backends))
+	b := lb.Selector.Select()
 
-	lb.Backends[b].Proxy.ServeHTTP(w, r)
+	b.Proxy.ServeHTTP(w, r)
 }
 
 func NewLb(backends []backend.Backend, selector selection.Selector) *Lb {
@@ -40,7 +40,7 @@ func (lb *Lb) SetHealthcheckTimer(timer int) {
 func (lb *Lb) Start() {
 	lb_proxy := http.Server{
 		Addr:    fmt.Sprintf(":%d", 8080),
-		Handler: http.HandlerFunc(lb.Serve),
+		Handler: http.HandlerFunc(lb.Selector.ServeHTTP),
 	}
 
 	go lb.runHealthchecks()

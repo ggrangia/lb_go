@@ -1,4 +1,4 @@
-package test
+package integration_test
 
 import (
 	"net/http"
@@ -14,7 +14,7 @@ import (
 func TestRandomSelection(t *testing.T) {
 	var wg sync.WaitGroup
 	seed := time.Now().UTC().UnixNano()
-	teardown, backends := setupBackends(t, 3)
+	teardown, backends := test.setupBackends(t, 3)
 	defer teardown(t)
 
 	selector := randomselection.NewRandomSelection(seed)

@@ -11,7 +11,7 @@ import (
 	"github.com/ggrangia/lb_go/pkg/backend"
 )
 
-func setupBackends(t *testing.T, n int) (func(t *testing.T), []backend.Backend) {
+func SetupBackends(t *testing.T, n int) (func(t *testing.T), []backend.Backend) {
 
 	backends := make([]backend.Backend, n)
 	servers := make([]*httptest.Server, n)
@@ -35,7 +35,7 @@ func setupBackends(t *testing.T, n int) (func(t *testing.T), []backend.Backend) 
 
 }
 
-func getTest(url string) {
+func GetTest(url string) {
 	// GET test
 	resp, err := http.Get(url)
 	if err != nil {
