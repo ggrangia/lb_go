@@ -15,13 +15,13 @@ type Backend struct {
 	http.Handler
 }
 
-func NewBackend(myurl string) Backend {
+func NewBackend(myurl string) *Backend {
 	rpURL, err := url.Parse(myurl)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return Backend{
+	return &Backend{
 		Addr:  myurl,
 		Url:   rpURL,
 		Proxy: httputil.NewSingleHostReverseProxy(rpURL),

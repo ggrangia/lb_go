@@ -8,12 +8,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ggrangia/lb_go/pkg/backend"
+	"github.com/ggrangia/lb_go/pkg/lb_go/backend"
 )
 
-func SetupBackends(t *testing.T, n int) (func(t *testing.T), []backend.Backend) {
+func SetupBackends(t *testing.T, n int) (func(t *testing.T), []*backend.Backend) {
 
-	backends := make([]backend.Backend, n)
+	backends := make([]*backend.Backend, n)
 	servers := make([]*httptest.Server, n)
 	for i := 0; i < n; i++ {
 		str := fmt.Sprintf("this call was relayed by the reverse proxy%d\n", i)
@@ -26,7 +26,6 @@ func SetupBackends(t *testing.T, n int) (func(t *testing.T), []backend.Backend) 
 	teardown := func(t *testing.T) {
 		for i := 0; i < len(backends); i++ {
 			defer servers[i].Close()
-
 		}
 	}
 	fmt.Println(servers)

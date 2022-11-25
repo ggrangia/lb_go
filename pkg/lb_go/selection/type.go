@@ -1,7 +1,12 @@
 package selection
 
-import "github.com/ggrangia/lb_go/pkg/backend"
+import (
+	"net/http"
+
+	"github.com/ggrangia/lb_go/pkg/lb_go/backend"
+)
 
 type Selector interface {
-	Select() backend.Backend
+	Select() *backend.Backend
+	http.Handler
 }

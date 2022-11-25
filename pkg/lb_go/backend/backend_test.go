@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/ggrangia/lb_go/pkg/backend"
+	"github.com/ggrangia/lb_go/pkg/lb_go/backend"
 	"github.com/google/go-cmp/cmp"
 )
 

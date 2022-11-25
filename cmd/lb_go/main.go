@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/ggrangia/lb_go/pkg/backend"
 	"github.com/ggrangia/lb_go/pkg/lb_go"
+	"github.com/ggrangia/lb_go/pkg/lb_go/backend"
 	"github.com/ggrangia/lb_go/pkg/lb_go/selection"
 	"github.com/ggrangia/lb_go/pkg/lb_go/selection/roundrobin"
 )
@@ -27,7 +27,7 @@ func main() {
 		fmt.Fprintln(w, "this call was relayed by the reverse proxy3")
 	}))
 	defer backendServer3.Close()
-	backends := []backend.Backend{
+	backends := []*backend.Backend{
 		backend.NewBackend(backendServer.URL),
 		backend.NewBackend(backendServer2.URL),
 		backend.NewBackend(backendServer3.URL),

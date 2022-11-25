@@ -4,7 +4,15 @@ import (
 	"net"
 	"net/url"
 	"time"
+
+	"github.com/ggrangia/lb_go/pkg/lb_go/selection"
 )
+
+// Take the Selector
+type Healthchecker struct {
+	Selector selection.Selector
+	interval time.Duration
+}
 
 func IsAliveTCP(url *url.URL) bool {
 	timeout := time.Second * 5
