@@ -7,6 +7,6 @@ import (
 )
 
 type Selector interface {
-	Select() *backend.Backend
 	http.Handler
+	GetBackends() []*backend.Backend
 }

@@ -4,30 +4,22 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/ggrangia/lb_go/pkg/healthcheck"
-	"github.com/ggrangia/lb_go/pkg/lb_go/backend"
 	"github.com/ggrangia/lb_go/pkg/lb_go/selection"
 )
 
 type Lb struct {
-	Backends     []*backend.Backend
-	Selector     selection.Selector
-	health_timer int
+	Selector       selection.Selector
+	health_service *healthcheck.Healthchecker
 }
 
-func NewLb(backends []*backend.Backend, selector selection.Selector) *Lb {
+func NewLb(selector selection.Selector, hs *healthcheck.Healthchecker) *Lb {
 
 	return &Lb{
-		Backends:     backends,
-		Selector:     selector,
-		health_timer: 5, // default value
+		Selector:       selector,
+		health_service: hs,
 	}
-}
-
-func (lb *Lb) SetHealthcheckTimer(timer int) {
-	lb.health_timer = timer
 }
 
 func (lb *Lb) Start() {
@@ -36,24 +28,8 @@ func (lb *Lb) Start() {
 		Handler: http.HandlerFunc(lb.Selector.ServeHTTP),
 	}
 
-	go lb.runHealthchecks()
-
+	go lb.health_service.RunHealthchecks()
 	if err := lb_proxy.ListenAndServe(); err != nil {
 		log.Fatal(err)
-	}
-}
-
-func (lb *Lb) runHealthchecks() {
-	ticker := time.NewTicker(time.Second * time.Duration(lb.health_timer))
-	for range ticker.C {
-		lb.healthchecks()
-	}
-}
-
-func (lb *Lb) healthchecks() {
-	for _, b := range lb.Selector.Backends {
-		alive := healthcheck.IsAliveTCP(b.Url)
-		fmt.Printf("%v is %v, it becomes %v\n", b.Addr, b.Alive, alive)
-		b.Alive = alive
 	}
 }
