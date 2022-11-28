@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	"github.com/ggrangia/lb_go/pkg/healthcheck"
 	"github.com/ggrangia/lb_go/pkg/lb_go"
 	"github.com/ggrangia/lb_go/pkg/lb_go/backend"
 	"github.com/ggrangia/lb_go/pkg/lb_go/selection"
@@ -41,8 +42,11 @@ func main() {
 	//case "randomselection":
 	//	selector = randomselection.NewRandomSelection(time.Now().UTC().UnixNano())
 	default:
-		log.Fatal("Selection algorithm unknown")
+		log.Fatalf("Unknown selection algorithm: %v", algo)
 	}
-	lb := lb_go.NewLb(backends, selector)
+
+	hc := healthcheck.New(selector, 5)
+
+	lb := lb_go.NewLb(selector, hc)
 	lb.Start()
 }
