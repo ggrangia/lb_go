@@ -15,7 +15,14 @@ type Healthchecker struct {
 	interval time.Duration
 }
 
-func (hs *Healthchecker) isAliveTCP(url *url.URL) bool {
+func New(s selection.Selector, i time.Duration) *Healthchecker {
+	return &Healthchecker{
+		Selector: s,
+		interval: i,
+	}
+}
+
+func (hs *Healthchecker) IsAliveTCP(url *url.URL) bool {
 	timeout := time.Second * 5
 	conn, err := net.DialTimeout("tcp", url.Host, timeout)
 	if err != nil {
@@ -35,7 +42,7 @@ func (hs *Healthchecker) RunHealthchecks() {
 
 func (hs *Healthchecker) healthchecks() {
 	for _, b := range hs.Selector.GetBackends() {
-		alive := hs.isAliveTCP(b.Url)
+		alive := hs.IsAliveTCP(b.Url)
 		fmt.Printf("%v is %v, it becomes %v\n", b.Addr, b.Alive, alive)
 		b.Alive = alive
 	}
