@@ -64,16 +64,17 @@ func TestNextServerNotAlive(t *testing.T) {
 
 	for _, tc := range tests {
 		got, err := rr.nextServer()
-		if err != nil {
-			t.Fatalf("Got error %v", err)
+		if err == nil {
+			t.Fatalf("No error connecting to %v. Got: %v", tc.want, got)
 		}
-		if !cmp.Equal(got.Url.Host, tc.want) {
-			t.Errorf("Expected output %v got %v", tc.want, got.Url.Host)
-		}
-		if !cmp.Equal(rr.Counter, tc.counter) {
-			t.Errorf("Expected counter %d got %d", tc.counter, rr.Counter)
+		if !cmp.Equal(err.Error(), ErrNoServer.Error()) {
+			t.Errorf("Expected output %v got %v", ErrNoServer.Error(), err.Error())
 		}
 	}
+}
 
-	t.Fatal("FIX TESTS var")
+func TestRR(t *testing.T) {
+	// Test the whole ServeHttp with multiple cases: all alive, all dead, 1 dead
+
+	t.Fatalf("TODO!")
 }

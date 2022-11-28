@@ -9,7 +9,7 @@ import (
 	"github.com/ggrangia/lb_go/pkg/lb_go/backend"
 )
 
-var ErrNoServer = errors.New("No available servers")
+var ErrNoServer = errors.New("no available servers")
 
 type RoundRobin struct {
 	mutex    sync.RWMutex
