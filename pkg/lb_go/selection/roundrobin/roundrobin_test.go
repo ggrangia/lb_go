@@ -1,17 +1,16 @@
-package roundrobin_test
+package roundrobin
 
 import (
 	"testing"
 
-	"github.com/ggrangia/lb_go/pkg/lb_go/selection/roundrobin"
 	"github.com/ggrangia/lb_go/test"
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestRoundRobinAlive(t *testing.T) {
+func TestNextServerAlive(t *testing.T) {
 	teardown, backends := test.SetupBackends(t, 3)
 	defer teardown(t)
-	rr := roundrobin.New()
+	rr := New()
 
 	for i := 0; i < len(backends); i++ {
 		// Set all backends alive
@@ -30,7 +29,10 @@ func TestRoundRobinAlive(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		got := rr.Select()
+		got, err := rr.nextServer()
+		if err != nil {
+			t.Fatalf("Got error %v", err)
+		}
 		if !cmp.Equal(got.Url.Host, tc.want) {
 			t.Errorf("Expected output %v got %v", tc.want, got.Url.Host)
 		}
@@ -40,15 +42,38 @@ func TestRoundRobinAlive(t *testing.T) {
 	}
 }
 
-func TestRoundRobinNotAlive(t *testing.T) {
+func TestNextServerNotAlive(t *testing.T) {
 	teardown, backends := test.SetupBackends(t, 3)
 	defer teardown(t)
-	rr := roundrobin.New()
+	rr := New()
 
 	// Backends alive is false by default
 	for i := 0; i < len(backends); i++ {
 		rr.AddBackend(backends[i])
 	}
 
-	t.Fatal("TO IMPLEMENT")
+	tests := []struct {
+		want    string
+		counter int
+	}{
+		{want: backends[0].Url.Host, counter: 1},
+		{want: backends[1].Url.Host, counter: 2},
+		{want: backends[2].Url.Host, counter: 0},
+		{want: backends[0].Url.Host, counter: 1},
+	}
+
+	for _, tc := range tests {
+		got, err := rr.nextServer()
+		if err != nil {
+			t.Fatalf("Got error %v", err)
+		}
+		if !cmp.Equal(got.Url.Host, tc.want) {
+			t.Errorf("Expected output %v got %v", tc.want, got.Url.Host)
+		}
+		if !cmp.Equal(rr.Counter, tc.counter) {
+			t.Errorf("Expected counter %d got %d", tc.counter, rr.Counter)
+		}
+	}
+
+	t.Fatal("FIX TESTS var")
 }

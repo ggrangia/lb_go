@@ -1,12 +1,15 @@
 package roundrobin
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"sync"
 
 	"github.com/ggrangia/lb_go/pkg/lb_go/backend"
 )
+
+var ErrNoServer = errors.New("No available servers")
 
 type RoundRobin struct {
 	mutex    sync.RWMutex
@@ -22,7 +25,7 @@ func (rr *RoundRobin) GetBackends() []*backend.Backend {
 	return rr.Backends
 }
 
-func (rr *RoundRobin) nextServer() *backend.Backend {
+func (rr *RoundRobin) nextServer() (*backend.Backend, error) {
 	rr.mutex.Lock()
 	defer rr.mutex.Unlock()
 
@@ -31,18 +34,23 @@ func (rr *RoundRobin) nextServer() *backend.Backend {
 		b := rr.Backends[rr.Counter]
 		rr.Counter = (rr.Counter + 1) % len(rr.Backends)
 		if b.Alive {
-			return b
+			return b, nil
 		}
 		fmt.Println()
 		if attempts >= len(rr.Backends) {
-			panic("AHHHHH, none is alive!!!!")
+			fmt.Println("AHHHHH, none is alive!!!!")
+			return nil, ErrNoServer
 		}
 		attempts++
 	}
 }
 
 func (rr *RoundRobin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	rr.nextServer().Proxy.ServeHTTP(w, r)
+	b, err := rr.nextServer()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	b.Proxy.ServeHTTP(w, r)
 }
 
 func New() *RoundRobin {
