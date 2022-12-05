@@ -16,7 +16,7 @@ func SetupBackends(t *testing.T, n int) (func(t *testing.T), []*backend.Backend)
 	backends := make([]*backend.Backend, n)
 	servers := make([]*httptest.Server, n)
 	for i := 0; i < n; i++ {
-		str := fmt.Sprintf("this call was relayed by the reverse proxy%d\n", i)
+		str := fmt.Sprintf("%d", i)
 		servers[i] = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintln(w, str)
 		}))

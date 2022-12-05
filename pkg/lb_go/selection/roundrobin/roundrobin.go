@@ -38,7 +38,6 @@ func (rr *RoundRobin) nextServer() (*backend.Backend, error) {
 		}
 		fmt.Println()
 		if attempts >= len(rr.Backends) {
-			fmt.Println("AHHHHH, none is alive!!!!")
 			return nil, ErrNoServer
 		}
 		attempts++
