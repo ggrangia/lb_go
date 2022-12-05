@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ggrangia/lb_go/pkg/selection/randomselection"
+	"github.com/ggrangia/lb_go/pkg/lb_go/selection/randomselection"
 	"github.com/google/go-cmp/cmp"
 )
 
