@@ -48,6 +48,7 @@ func (rr *RoundRobin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	b, err := rr.nextServer()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	b.Proxy.ServeHTTP(w, r)
 }
