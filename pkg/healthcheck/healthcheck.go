@@ -34,6 +34,8 @@ func (hs *Healthchecker) IsAliveTCP(url *url.URL) bool {
 }
 
 func (hs *Healthchecker) RunHealthchecks() {
+	// Call healthchecks immidiately
+	hs.healthchecks()
 	ticker := time.NewTicker(time.Second * hs.interval)
 	for range ticker.C {
 		hs.healthchecks()
