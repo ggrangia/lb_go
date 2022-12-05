@@ -2,6 +2,7 @@ package backend
 
 import (
 	"log"
+	"net/http"
 	"net/http/httputil"
 	"net/url"
 )
@@ -11,15 +12,16 @@ type Backend struct {
 	Proxy *httputil.ReverseProxy
 	Url   *url.URL
 	Alive bool
+	http.Handler
 }
 
-func NewBackend(myurl string) Backend {
+func NewBackend(myurl string) *Backend {
 	rpURL, err := url.Parse(myurl)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return Backend{
+	return &Backend{
 		Addr:  myurl,
 		Url:   rpURL,
 		Proxy: httputil.NewSingleHostReverseProxy(rpURL),

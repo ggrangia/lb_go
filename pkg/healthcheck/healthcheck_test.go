@@ -8,7 +8,20 @@ import (
 	"testing"
 
 	"github.com/ggrangia/lb_go/pkg/healthcheck"
+	"github.com/ggrangia/lb_go/pkg/lb_go/backend"
 )
+
+type mockSelector struct {
+	B []*backend.Backend
+}
+
+func (fs *mockSelector) GetBackends() []*backend.Backend {
+	return fs.B
+}
+
+func (fs *mockSelector) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fs.B[0].ServeHTTP(w, r)
+}
 
 func TestIsAliveTCP(t *testing.T) {
 
@@ -23,7 +36,11 @@ func TestIsAliveTCP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Parsing failed: %v", err)
 	}
-	res = healthcheck.IsAliveTCP(myurl)
+
+	selec := mockSelector{B: []*backend.Backend{backend.NewBackend(s.URL)}}
+
+	hc := healthcheck.New(&selec, 5)
+	res = hc.IsAliveTCP(myurl)
 	if !res {
 		t.Errorf("Expected %v to be alive", myurl)
 	}
@@ -34,7 +51,7 @@ func TestIsAliveTCP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Parsing failed: %v", err)
 	}
-	res = healthcheck.IsAliveTCP(offlineUrl)
+	res = hc.IsAliveTCP(offlineUrl)
 	if res {
 		t.Errorf("Expected %v to be dead", offlineUrl)
 	}

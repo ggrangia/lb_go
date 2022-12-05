@@ -4,62 +4,36 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
-	"github.com/ggrangia/lb_go/pkg/backend"
 	"github.com/ggrangia/lb_go/pkg/healthcheck"
-	"github.com/ggrangia/lb_go/pkg/selection"
+	"github.com/ggrangia/lb_go/pkg/lb_go/selection"
 )
 
 type Lb struct {
-	Backends     []backend.Backend
-	Selector     selection.Selector
-	health_timer int
+	Selector       selection.Selector
+	health_service *healthcheck.Healthchecker
+	URL            string
 }
 
-func (lb *Lb) Serve(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("called the proxy")
-	b := lb.Selector.Select(len(lb.Backends))
-
-	lb.Backends[b].Proxy.ServeHTTP(w, r)
-}
-
-func NewLb(backends []backend.Backend, selector selection.Selector) *Lb {
+func NewLb(selector selection.Selector, hs *healthcheck.Healthchecker) *Lb {
 
 	return &Lb{
-		Backends:     backends,
-		Selector:     selector,
-		health_timer: 10, // default value
+		Selector:       selector,
+		health_service: hs,
 	}
-}
-
-func (lb *Lb) SetHealthcheckTimer(timer int) {
-	lb.health_timer = timer
 }
 
 func (lb *Lb) Start() {
 	lb_proxy := http.Server{
 		Addr:    fmt.Sprintf(":%d", 8080),
-		Handler: http.HandlerFunc(lb.Serve),
+		Handler: http.HandlerFunc(lb.Selector.ServeHTTP),
 	}
 
-	go lb.runHealthchecks()
+	lb.URL = lb_proxy.Addr
 
+	go lb.health_service.RunHealthchecks()
 	if err := lb_proxy.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
-}
 
-func (lb *Lb) runHealthchecks() {
-	ticker := time.NewTicker(time.Second * time.Duration(lb.health_timer))
-	for range ticker.C {
-		lb.healthchecks()
-	}
-}
-
-func (lb *Lb) healthchecks() {
-	for _, b := range lb.Backends {
-		alive := healthcheck.IsAliveTCP(b.Url)
-		b.Alive = alive
-	}
 }

@@ -5,13 +5,12 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"time"
 
-	"github.com/ggrangia/lb_go/pkg/backend"
+	"github.com/ggrangia/lb_go/pkg/healthcheck"
 	"github.com/ggrangia/lb_go/pkg/lb_go"
-	"github.com/ggrangia/lb_go/pkg/selection"
-	"github.com/ggrangia/lb_go/pkg/selection/randomselection"
-	"github.com/ggrangia/lb_go/pkg/selection/roundrobin"
+	"github.com/ggrangia/lb_go/pkg/lb_go/backend"
+	"github.com/ggrangia/lb_go/pkg/lb_go/selection"
+	"github.com/ggrangia/lb_go/pkg/lb_go/selection/roundrobin"
 )
 
 func main() {
@@ -29,7 +28,7 @@ func main() {
 		fmt.Fprintln(w, "this call was relayed by the reverse proxy3")
 	}))
 	defer backendServer3.Close()
-	backends := []backend.Backend{
+	backends := []*backend.Backend{
 		backend.NewBackend(backendServer.URL),
 		backend.NewBackend(backendServer2.URL),
 		backend.NewBackend(backendServer3.URL),
@@ -39,12 +38,15 @@ func main() {
 	var selector selection.Selector
 	switch algo {
 	case "roundrobin":
-		selector = roundrobin.NewRoundRobin()
-	case "randomselection":
-		selector = randomselection.NewRandomSelection(time.Now().UTC().UnixNano())
+		selector = roundrobin.NewWithBackends(backends)
+	//case "randomselection":
+	//	selector = randomselection.NewRandomSelection(time.Now().UTC().UnixNano())
 	default:
-		log.Fatal("Selection algorithm unknown")
+		log.Fatalf("Unknown selection algorithm: %v", algo)
 	}
-	lb := lb_go.NewLb(backends, selector)
+
+	hc := healthcheck.New(selector, 5)
+
+	lb := lb_go.NewLb(selector, hc)
 	lb.Start()
 }
