@@ -12,6 +12,7 @@ import (
 type Lb struct {
 	Selector       selection.Selector
 	health_service *healthcheck.Healthchecker
+	URL            string
 }
 
 func NewLb(selector selection.Selector, hs *healthcheck.Healthchecker) *Lb {
@@ -28,8 +29,11 @@ func (lb *Lb) Start() {
 		Handler: http.HandlerFunc(lb.Selector.ServeHTTP),
 	}
 
+	lb.URL = lb_proxy.Addr
+
 	go lb.health_service.RunHealthchecks()
 	if err := lb_proxy.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
+
 }
