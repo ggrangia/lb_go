@@ -18,11 +18,19 @@ func TestNewBackend(t *testing.T) {
 	}
 	expected := backend.Backend{
 		Addr:  wantUrl,
+		Url:   rpURL,
 		Proxy: httputil.NewSingleHostReverseProxy(rpURL),
+		Alive: false,
 	}
 	result := backend.NewBackend(wantUrl)
 
-	if diff := cmp.Diff(expected, result); diff != "" {
-		t.Errorf("Got backend %v want %v, diff: %v", result, expected, diff)
+	if diff := cmp.Diff(result.Addr, expected.Addr); diff != "" {
+		t.Errorf("Got backend %v want %v, diff: %v", result.Addr, expected.Addr, diff)
+	}
+	if diff := cmp.Diff(result.Url, expected.Url); diff != "" {
+		t.Errorf("Got backend %v want %v, diff: %v", result.Url, expected.Url, diff)
+	}
+	if diff := cmp.Diff(result.Alive, expected.Alive); diff != "" {
+		t.Errorf("Got backend %v want %v, diff: %v", result.Alive, expected.Alive, diff)
 	}
 }
