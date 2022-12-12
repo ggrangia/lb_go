@@ -5,11 +5,13 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"time"
 
 	"github.com/ggrangia/lb_go/pkg/healthcheck"
 	"github.com/ggrangia/lb_go/pkg/lb_go"
 	"github.com/ggrangia/lb_go/pkg/lb_go/backend"
 	"github.com/ggrangia/lb_go/pkg/lb_go/selection"
+	"github.com/ggrangia/lb_go/pkg/lb_go/selection/randomselection"
 	"github.com/ggrangia/lb_go/pkg/lb_go/selection/roundrobin"
 )
 
@@ -39,8 +41,8 @@ func main() {
 	switch algo {
 	case "roundrobin":
 		selector = roundrobin.NewWithBackends(backends)
-	//case "randomselection":
-	//	selector = randomselection.NewRandomSelection(time.Now().UTC().UnixNano())
+	case "randomselection":
+		selector = randomselection.NewRandomSelection(time.Now().UTC().UnixNano())
 	default:
 		log.Fatalf("Unknown selection algorithm: %v", algo)
 	}
