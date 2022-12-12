@@ -42,7 +42,7 @@ func main() {
 	case "roundrobin":
 		selector = roundrobin.NewWithBackends(backends)
 	case "randomselection":
-		selector = randomselection.NewRandomSelection(time.Now().UTC().UnixNano())
+		selector = randomselection.NewWithBackends(time.Now().UTC().UnixNano(), backends)
 	default:
 		log.Fatalf("Unknown selection algorithm: %v", algo)
 	}
