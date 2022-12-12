@@ -34,12 +34,19 @@ func (rs *RandomSelection) GetBackends() []*backend.Backend {
 	return rs.Backends
 }
 
-func NewRandomSelection(seed int64) *RandomSelection {
+func New(seed int64) *RandomSelection {
 	source := rand.NewSource(seed)
 	generator := rand.New(source)
 	return &RandomSelection{
 		generator: *generator,
 	}
+}
+
+func NewWithBackends(seed int64, backends []*backend.Backend) *RandomSelection {
+	rs := New(seed)
+	rs.Backends = backends
+
+	return rs
 }
 
 func (rs *RandomSelection) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -49,4 +56,8 @@ func (rs *RandomSelection) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	b.Proxy.ServeHTTP(w, r)
+}
+
+func (rs *RandomSelection) AddBackend(b *backend.Backend) {
+	rs.Backends = append(rs.Backends, b)
 }
