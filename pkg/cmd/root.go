@@ -53,9 +53,10 @@ var cmdStart = &cobra.Command{
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	// FIXME: Change default config file name
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cobra.yaml)")
-	rootCmd.PersistentFlags().StringVarP(&algorithm, "algorithm", "a", "default_algo", "load balancing algorithm to be used")
-	rootCmd.PersistentFlags().Int("healthcheck", 5, "load balancing algorithm to be used")
+	rootCmd.PersistentFlags().StringVarP(&algorithm, "algorithm", "a", "roundrobin", "load balancing algorithm to be used")
+	rootCmd.PersistentFlags().IntP("healthcheck", "c", 5, "healthcheck timer")
 	viper.BindPFlag("algorithm", rootCmd.PersistentFlags().Lookup("algorithm"))
 	viper.BindPFlag("healthcheck", rootCmd.PersistentFlags().Lookup("healthcheck"))
 
