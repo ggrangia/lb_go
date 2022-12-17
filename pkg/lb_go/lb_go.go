@@ -20,6 +20,7 @@ func NewLb(selector selection.Selector, hs *healthcheck.Healthchecker) *Lb {
 	return &Lb{
 		Selector:       selector,
 		health_service: hs,
+		port:           8080,
 	}
 }
 

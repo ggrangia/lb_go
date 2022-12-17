@@ -18,8 +18,7 @@ import (
 
 var (
 	// Used for flags.
-	cfgFile   string
-	algorithm string
+	cfgFile string
 
 	rootCmd = &cobra.Command{
 		Use:   "start",
@@ -55,7 +54,7 @@ func init() {
 
 	// FIXME: Change default config file name
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cobra.yaml)")
-	rootCmd.PersistentFlags().StringVarP(&algorithm, "algorithm", "a", "roundrobin", "load balancing algorithm to be used")
+	rootCmd.PersistentFlags().StringP("algorithm", "a", "roundrobin", "load balancing algorithm to be used")
 	rootCmd.PersistentFlags().IntP("healthcheck", "c", 5, "healthcheck timer")
 	viper.BindPFlag("algorithm", rootCmd.PersistentFlags().Lookup("algorithm"))
 	viper.BindPFlag("healthcheck", rootCmd.PersistentFlags().Lookup("healthcheck"))
@@ -64,7 +63,6 @@ func init() {
 }
 
 func initConfig() {
-	fmt.Println("AAAAAAAAAAAAAAA")
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -77,7 +75,7 @@ func initConfig() {
 		// Search config in home directory with name ".cobra" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName("cobra")
+		viper.SetConfigName("lb_go")
 	}
 
 	viper.AutomaticEnv()
