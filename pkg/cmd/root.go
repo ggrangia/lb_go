@@ -38,6 +38,8 @@ var cmdStart = &cobra.Command{
 	Short: "Start the loab balancer",
 	Run: func(cmd *cobra.Command, args []string) {
 		algo := viper.GetString("algorithm")
+		port := viper.GetInt("port")
+		hc := viper.GetInt("healthcheck")
 		fmt.Printf("aaaaa: %v\n", viper.GetString("algorithm"))
 		fmt.Printf("str slice: %v\n", viper.GetStringSlice("backends"))
 		back_urls := viper.GetStringSlice("backends")
@@ -45,19 +47,20 @@ var cmdStart = &cobra.Command{
 		for i, b := range back_urls {
 			backends[i] = backend.NewBackend(b)
 		}
-		start(backends, algo)
+		start(backends, algo, time.Duration(hc), port)
 	},
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// FIXME: Change default config file name
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cobra.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.lb_go.yaml)")
 	rootCmd.PersistentFlags().StringP("algorithm", "a", "roundrobin", "load balancing algorithm to be used")
 	rootCmd.PersistentFlags().IntP("healthcheck", "c", 5, "healthcheck timer")
+	rootCmd.PersistentFlags().IntP("port", "p", 8080, "listening port")
 	viper.BindPFlag("algorithm", rootCmd.PersistentFlags().Lookup("algorithm"))
 	viper.BindPFlag("healthcheck", rootCmd.PersistentFlags().Lookup("healthcheck"))
+	viper.BindPFlag("port", rootCmd.PersistentFlags().Lookup("port"))
 
 	rootCmd.AddCommand(cmdStart)
 }
@@ -72,7 +75,7 @@ func initConfig() {
 		fmt.Printf("HOME: %s\n", home)
 		cobra.CheckErr(err)
 
-		// Search config in home directory with name ".cobra" (without extension).
+		// Search config in home directory with name "lb_go"
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName("lb_go")
@@ -87,7 +90,7 @@ func initConfig() {
 	}
 }
 
-func start(backends []*backend.Backend, algo string) {
+func start(backends []*backend.Backend, algo string, h time.Duration, port int) {
 	var selector selection.Selector
 	switch algo {
 	case "roundrobin":
@@ -98,7 +101,7 @@ func start(backends []*backend.Backend, algo string) {
 		log.Fatalf("Unknown selection algorithm: %v", algo)
 	}
 
-	hc := healthcheck.New(selector, 5)
+	hc := healthcheck.New(selector, h)
 
 	lb := lb_go.NewLb(selector, hc)
 	lb.Start()
