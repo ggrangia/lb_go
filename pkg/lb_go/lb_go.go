@@ -17,12 +17,12 @@ type Lb struct {
 	proxy          *http.Server
 }
 
-func NewLb(selector selection.Selector, hs *healthcheck.Healthchecker) *Lb {
+func NewLb(selector selection.Selector, hs *healthcheck.Healthchecker, port int) *Lb {
 
 	return &Lb{
 		Selector:       selector,
 		health_service: hs,
-		port:           8080,
+		port:           port,
 	}
 }
 

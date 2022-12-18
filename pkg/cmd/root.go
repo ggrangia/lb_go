@@ -103,6 +103,6 @@ func start(backends []*backend.Backend, algo string, h time.Duration, port int) 
 
 	hc := healthcheck.New(selector, h)
 
-	lb := lb_go.NewLb(selector, hc)
+	lb := lb_go.NewLb(selector, hc, port)
 	lb.Start()
 }
