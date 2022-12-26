@@ -16,6 +16,7 @@ type Healthchecker struct {
 }
 
 func New(s selection.Selector, i time.Duration) *Healthchecker {
+	fmt.Printf("Starting healthckecks with timer %v\n", i)
 	return &Healthchecker{
 		Selector: s,
 		interval: i,
