@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+
+  lb_go:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./lb_go.yaml:/app/lb_go.yml"
+
+  web1:
+    image: strm/helloworld-http
+  web2:
+    image: strm/helloworld-http
+  web3:
+    image: strm/helloworld-http
