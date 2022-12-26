@@ -40,8 +40,7 @@ var cmdStart = &cobra.Command{
 		algo := viper.GetString("algorithm")
 		port := viper.GetInt("port")
 		hc := viper.GetInt("healthcheck")
-		fmt.Printf("aaaaa: %v\n", viper.GetString("algorithm"))
-		fmt.Printf("str slice: %v\n", viper.GetStringSlice("backends"))
+		fmt.Printf("Selected algorithm: %v\n", viper.GetString("algorithm"))
 		back_urls := viper.GetStringSlice("backends")
 		backends := make([]*backend.Backend, len(back_urls))
 		for i, b := range back_urls {
