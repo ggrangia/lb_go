@@ -7,7 +7,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - "./lb_go.yaml:/app/lb_go.yml"
+      - "./lb_go_example.yaml:/app/lb_go.yml"
 
   web1:
     image: strm/helloworld-http
