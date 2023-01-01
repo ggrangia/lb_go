@@ -21,10 +21,9 @@ var (
 	cfgFile string
 
 	rootCmd = &cobra.Command{
-		Use:   "start",
-		Short: "Start the loab balancer",
-		Run: func(cmd *cobra.Command, args []string) {
-		},
+		Use:   "lb_go",
+		Short: "A simple load balancer",
+		Long:  "A simple load balancer",
 	}
 )
 
@@ -53,7 +52,7 @@ var cmdStart = &cobra.Command{
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.lb_go.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./lb_go.yaml)")
 	rootCmd.PersistentFlags().StringP("algorithm", "a", "roundrobin", "load balancing algorithm to be used")
 	rootCmd.PersistentFlags().IntP("healthcheck", "c", 5, "healthcheck timer")
 	rootCmd.PersistentFlags().IntP("port", "p", 8080, "listening port")
@@ -69,13 +68,13 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		home, err := os.UserHomeDir()
-		fmt.Printf("HOME: %s\n", home)
+		// Find the config in the running folder
+		curr, err := os.Getwd()
+		fmt.Printf("Current DIR: %s\n", curr)
 		cobra.CheckErr(err)
 
-		// Search config in home directory with name "lb_go"
-		viper.AddConfigPath(home)
+		// Search config in current directory with name "lb_go"
+		viper.AddConfigPath(curr)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName("lb_go")
 	}
@@ -86,6 +85,9 @@ func initConfig() {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	} else {
 		fmt.Println("Failed reading config file:", err.Error())
+		fmt.Println("****************")
+		rootCmd.Help()
+		os.Exit(0)
 	}
 }
 

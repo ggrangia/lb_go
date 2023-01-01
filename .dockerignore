@@ -1,0 +1,5 @@
+.devcontainer
+.git
+.gitignore
+*.yaml
+README.md
