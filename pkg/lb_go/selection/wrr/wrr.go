@@ -55,3 +55,11 @@ func (w *Wrr) Pop() interface{} {
 	w.Backends = w.Backends[0 : l-1]
 	return b
 }
+
+func (w *Wrr) GetBackends() []*backend.Backend {
+	backends := make([]*backend.Backend, len(w.Backends))
+	for i, b := range w.Backends {
+		backends[i] = &b.Backend
+	}
+	return backends
+}
