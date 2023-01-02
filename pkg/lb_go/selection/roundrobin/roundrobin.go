@@ -18,7 +18,9 @@ type RoundRobin struct {
 }
 
 func (rr *RoundRobin) AddBackend(b *backend.Backend) {
+	rr.mutex.Lock()
 	rr.Backends = append(rr.Backends, b)
+	rr.mutex.Unlock()
 }
 
 func (rr *RoundRobin) GetBackends() []*backend.Backend {
