@@ -2,19 +2,23 @@ package wrr
 
 import (
 	"container/heap"
+	"errors"
+	"net/http"
 	"sync"
 
 	"github.com/ggrangia/lb_go/pkg/lb_go/backend"
 )
 
-type weightedBackends struct {
+var ErrNoServer = errors.New("no available servers")
+
+type weightedBackend struct {
 	backend.Backend
 	weight int
 }
 
 type Wrr struct {
 	mutex    sync.RWMutex
-	Backends []*weightedBackends
+	Backends []*weightedBackend
 }
 
 func New() *Wrr {
@@ -23,7 +27,7 @@ func New() *Wrr {
 
 func (w *Wrr) AddWeightedBackend(b *backend.Backend, i int) {
 	w.mutex.Lock()
-	wb := &weightedBackends{*b, i}
+	wb := &weightedBackend{*b, i}
 	heap.Push(w, wb)
 	w.mutex.Unlock()
 }
@@ -41,7 +45,7 @@ func (w *Wrr) Swap(i, j int) {
 }
 
 func (w *Wrr) Push(x any) {
-	item, ok := x.(*weightedBackends)
+	item, ok := x.(*weightedBackend)
 	if !ok {
 		return
 	}
@@ -62,4 +66,25 @@ func (w *Wrr) GetBackends() []*backend.Backend {
 		backends[i] = &b.Backend
 	}
 	return backends
+}
+
+func (w *Wrr) nextServer() (*weightedBackend, error) {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
+
+	if len(w.Backends) == 0 {
+		return nil, ErrNoServer
+	}
+	for {
+		// TODO: Implement
+	}
+}
+
+func (w *Wrr) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+	b, err := w.nextServer()
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	b.Proxy.ServeHTTP(rw, r)
 }
