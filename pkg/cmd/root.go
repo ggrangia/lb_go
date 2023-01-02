@@ -12,6 +12,7 @@ import (
 	"github.com/ggrangia/lb_go/pkg/lb_go/selection"
 	"github.com/ggrangia/lb_go/pkg/lb_go/selection/randomselection"
 	"github.com/ggrangia/lb_go/pkg/lb_go/selection/roundrobin"
+	"github.com/ggrangia/lb_go/pkg/lb_go/selection/wrr"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -45,7 +46,8 @@ var cmdStart = &cobra.Command{
 		for i, b := range back_urls {
 			backends[i] = backend.NewBackend(b)
 		}
-		start(backends, algo, time.Duration(hc), port)
+		weights := viper.GetIntSlice("weights")
+		start(backends, algo, time.Duration(hc), port, weights)
 	},
 }
 
@@ -91,13 +93,20 @@ func initConfig() {
 	}
 }
 
-func start(backends []*backend.Backend, algo string, h time.Duration, port int) {
+func start(backends []*backend.Backend, algo string, h time.Duration, port int, weights []int) {
 	var selector selection.Selector
 	switch algo {
 	case "roundrobin":
 		selector = roundrobin.NewWithBackends(backends)
 	case "randomselection":
 		selector = randomselection.NewWithBackends(time.Now().UTC().UnixNano(), backends)
+	case "wrr":
+		w := wrr.New()
+		// TODO: error check: len(weigths) == len(backends)
+		for i, weight := range weights {
+			w.AddWeightedBackend(backends[i], weight)
+		}
+		selector = w
 	default:
 		log.Fatalf("Unknown selection algorithm: %v", algo)
 	}
