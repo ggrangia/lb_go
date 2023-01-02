@@ -11,14 +11,20 @@ import (
 
 var ErrNoServer = errors.New("no available servers")
 
+// Wrr based on Earliest Deadline First (floating point)
+// The deadline is computed as 1 / weight
+// current simulates the flow of time
+
 type weightedBackend struct {
 	backend.Backend
-	weight int
+	weight   int
+	deadline float64
 }
 
 type Wrr struct {
 	mutex    sync.RWMutex
 	Backends []*weightedBackend
+	current  float64
 }
 
 func New() *Wrr {
@@ -26,8 +32,13 @@ func New() *Wrr {
 }
 
 func (w *Wrr) AddWeightedBackend(b *backend.Backend, i int) {
+	if i <= 0 {
+		// meaningless
+		return
+	}
 	w.mutex.Lock()
-	wb := &weightedBackend{*b, i}
+	d := w.current + 1/float64(i)
+	wb := &weightedBackend{*b, i, d}
 	heap.Push(w, wb)
 	w.mutex.Unlock()
 }
@@ -75,8 +86,22 @@ func (w *Wrr) nextServer() (*weightedBackend, error) {
 	if len(w.Backends) == 0 {
 		return nil, ErrNoServer
 	}
+	attempts := 1
 	for {
-		// TODO: Implement
+		wb := heap.Pop(w).(*weightedBackend)
+		// update current time
+		w.current = wb.deadline
+		// Update the backend (new current) and put it back in the heap
+		wb.deadline = w.current + 1/float64(wb.weight)
+		heap.Push(w, wb)
+
+		if wb.Alive {
+			return wb, nil
+		}
+		if attempts >= len(w.Backends) {
+			return nil, ErrNoServer
+		}
+		attempts++
 	}
 }
 
