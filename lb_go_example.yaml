@@ -1,4 +1,4 @@
-algorithm: roundrobin
+algorithm: wrr
 port: 8080
 backends:
   - http://web1:80
