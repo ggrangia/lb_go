@@ -12,7 +12,7 @@ import (
 var ErrNoServer = errors.New("no available servers")
 
 // Wrr based on Earliest Deadline First (floating point)
-// The deadline is computed as 1 / weight
+// The deadline is computed as current + 1 / weight
 // current simulates the flow of time
 
 type weightedBackend struct {
@@ -48,7 +48,7 @@ func (w *Wrr) Len() int {
 }
 
 func (w *Wrr) Less(i, j int) bool {
-	return w.Backends[i].weight < w.Backends[j].weight
+	return w.Backends[i].deadline < w.Backends[j].deadline
 }
 
 func (w *Wrr) Swap(i, j int) {
@@ -91,7 +91,7 @@ func (w *Wrr) nextServer() (*weightedBackend, error) {
 		wb := heap.Pop(w).(*weightedBackend)
 		// update current time
 		w.current = wb.deadline
-		// Update the backend (new current) and put it back in the heap
+		// Update the backend (using new current) and put it back in the heap
 		wb.deadline = w.current + 1/float64(wb.weight)
 		heap.Push(w, wb)
 
