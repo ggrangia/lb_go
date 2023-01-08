@@ -1,6 +1,11 @@
-algorithm: roundrobin
+algorithm: wrr
 port: 8080
 backends:
   - http://web1:80
   - http://web2:80
   - http://web3:80
+
+weights:
+  - 2
+  - 2
+  - 6

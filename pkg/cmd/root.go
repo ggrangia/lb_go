@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"github.com/ggrangia/lb_go/pkg/lb_go/selection"
 	"github.com/ggrangia/lb_go/pkg/lb_go/selection/randomselection"
 	"github.com/ggrangia/lb_go/pkg/lb_go/selection/roundrobin"
+	"github.com/ggrangia/lb_go/pkg/lb_go/selection/wrr"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -35,7 +37,7 @@ func Execute() error {
 var cmdStart = &cobra.Command{
 	Use:   "start",
 	Short: "Start the loab balancer",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		algo := viper.GetString("algorithm")
 		port := viper.GetInt("port")
 		hc := viper.GetInt("healthcheck")
@@ -45,7 +47,8 @@ var cmdStart = &cobra.Command{
 		for i, b := range back_urls {
 			backends[i] = backend.NewBackend(b)
 		}
-		start(backends, algo, time.Duration(hc), port)
+		weights := viper.GetIntSlice("weights")
+		return start(backends, algo, time.Duration(hc), port, weights)
 	},
 }
 
@@ -91,13 +94,28 @@ func initConfig() {
 	}
 }
 
-func start(backends []*backend.Backend, algo string, h time.Duration, port int) {
+var ErrMismatchLength = errors.New("mismatch length between backends and weights")
+
+func start(backends []*backend.Backend, algo string, h time.Duration, port int, weights []int) error {
 	var selector selection.Selector
 	switch algo {
 	case "roundrobin":
 		selector = roundrobin.NewWithBackends(backends)
 	case "randomselection":
 		selector = randomselection.NewWithBackends(time.Now().UTC().UnixNano(), backends)
+	case "wrr":
+		w := wrr.New()
+		lw := len(weights)
+		lbs := len(backends)
+		if lw == 0 {
+			weights = make([]int, lbs)
+		} else if lbs != lw {
+			return ErrMismatchLength
+		}
+		for i, weight := range weights {
+			w.AddWeightedBackend(backends[i], weight)
+		}
+		selector = w
 	default:
 		log.Fatalf("Unknown selection algorithm: %v", algo)
 	}
@@ -106,4 +124,5 @@ func start(backends []*backend.Backend, algo string, h time.Duration, port int) 
 
 	lb := lb_go.NewLb(selector, hc, port)
 	lb.Start()
+	return nil
 }
