@@ -9,5 +9,6 @@ The main purpose for this repo, is to have a baseline loadbalancer to fiddle wit
 # TODO
 * Multistage build
 * Logging
+* Github actions (e.g. publish image on dh) 
 * Add/remove backends dynamically
 * Too many things... XD 
