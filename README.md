@@ -2,9 +2,7 @@
 A simple load balancer for experimental purposes
 
 # TODO
-* Healthckecks
-* More Algos: Wrr, least connection
-* Lb constructor
-* Config parse
+* Multistage build
 * Logging
-* ....
+* Add/remove backends dynamically
+* Too many things... XD 
