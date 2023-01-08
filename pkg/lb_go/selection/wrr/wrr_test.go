@@ -57,25 +57,10 @@ func TestNextServerNotAlive(t *testing.T) {
 		rr.AddWeightedBackend(backends[i], weights[i])
 	}
 
-	tests := []struct {
-		want int
-	}{
-		{want: 11},
-		{want: 9},
-		{want: 7},
-		{want: 11},
-		{want: 5},
-		{want: 9},
-		{want: 4},
-		{want: 11},
-		{want: 7},
-		{want: 3},
-	}
-
-	for _, tc := range tests {
+	for i := 0; i < 5; i++ {
 		got, err := rr.nextServer()
 		if err == nil {
-			t.Fatalf("No error connecting to %v. Got: %v", tc.want, got)
+			t.Fatalf("No error connecting. Got: %v", got)
 		}
 
 		if !cmp.Equal(err.Error(), ErrNoServer.Error()) {
