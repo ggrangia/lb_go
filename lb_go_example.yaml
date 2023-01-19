@@ -1,10 +1,14 @@
+# other options are roundrobin, randomselection
 algorithm: wrr
-port: 8080
-backends:
+# defaut port, optional
+port: 8080 
+# the most important field, it is the list of backends behind our
+# load balancer  
+backends: 
   - http://web1:80
   - http://web2:80
   - http://web3:80
-
+# weights to be assigned to yours backend in the wrr
 weights:
   - 2
   - 2
