@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"log"
+
 	"os"
 	"time"
 
@@ -41,7 +41,7 @@ var cmdStart = &cobra.Command{
 		algo := viper.GetString("algorithm")
 		port := viper.GetInt("port")
 		hc := viper.GetInt("healthcheck")
-		fmt.Printf("Selected algorithm: %v\n", viper.GetString("algorithm"))
+		log.Printf("Selected algorithm: %v\n", viper.GetString("algorithm"))
 		back_urls := viper.GetStringSlice("backends")
 		backends := make([]*backend.Backend, len(back_urls))
 		for i, b := range back_urls {
@@ -73,7 +73,7 @@ func initConfig() {
 	} else {
 		// Find the config in the running folder
 		curr, err := os.Getwd()
-		fmt.Printf("Current DIR: %s\n", curr)
+		log.Printf("Current DIR: %s\n", curr)
 		cobra.CheckErr(err)
 
 		// Search config in current directory with name "lb_go"
@@ -85,10 +85,10 @@ func initConfig() {
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		log.Println("Using config file:", viper.ConfigFileUsed())
 	} else {
-		fmt.Println("Failed reading config file:", err.Error())
-		fmt.Println("****************")
+		log.Println("Failed reading config file:", err.Error())
+		log.Println("****************")
 		rootCmd.Help()
 		os.Exit(0)
 	}
