@@ -1,5 +1,5 @@
 # 
-FROM golang AS build
+FROM golang:1.20rc3-bullseye AS build
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -v -o ./lb_go cmd/lb_go/main.go
 
 #
-FROM alpine:latest
+FROM alpine:3.17.1
 
 WORKDIR /app
 COPY --from=build /app/lb_go ./
