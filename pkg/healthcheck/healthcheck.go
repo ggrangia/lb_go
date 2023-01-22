@@ -1,7 +1,7 @@
 package healthcheck
 
 import (
-	"fmt"
+	"log"
 	"net"
 	"net/url"
 	"time"
@@ -16,7 +16,7 @@ type Healthchecker struct {
 }
 
 func New(s selection.Selector, i time.Duration) *Healthchecker {
-	fmt.Printf("Starting healthckecks with timer %d\n", i)
+	log.Printf("Starting healthckecks with timer %d\n", i)
 	return &Healthchecker{
 		Selector: s,
 		interval: i,
@@ -46,7 +46,7 @@ func (hs *Healthchecker) RunHealthchecks() {
 func (hs *Healthchecker) healthchecks() {
 	for _, b := range hs.Selector.GetBackends() {
 		alive := hs.IsAliveTCP(b.Url)
-		fmt.Printf("%v is %v, it becomes %v\n", b.Addr, b.Alive, alive)
+		log.Printf("%v is %v, it becomes %v\n", b.Addr, b.Alive, alive)
 		b.Alive = alive
 	}
 }

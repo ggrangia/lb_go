@@ -28,8 +28,8 @@ func SetupBackends(t *testing.T, n int) (func(t *testing.T), []*backend.Backend)
 			defer servers[i].Close()
 		}
 	}
-	fmt.Println(servers)
-	fmt.Println(backends)
+	log.Println(servers)
+	log.Println(backends)
 	return teardown, backends
 
 }
@@ -46,5 +46,5 @@ func GetTest(url string) {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("%s", b)
+	log.Printf("%s", b)
 }
