@@ -2,7 +2,6 @@ package roundrobin
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"sync"
 
@@ -38,7 +37,6 @@ func (rr *RoundRobin) nextServer() (*backend.Backend, error) {
 		if b.Alive {
 			return b, nil
 		}
-		fmt.Println()
 		if attempts >= len(rr.Backends) {
 			return nil, ErrNoServer
 		}
