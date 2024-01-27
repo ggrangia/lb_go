@@ -10,7 +10,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -v -o ./lb_go cmd/lb_go/main.go
 
 #
-FROM alpine:3.17.3
+FROM alpine:3.18.6
 
 WORKDIR /app
 COPY --from=build /app/lb_go ./
